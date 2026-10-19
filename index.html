@@ -87,6 +87,18 @@ p { margin: 0; }
 .nav { display: flex; gap: 20px; margin-left: auto; align-items: center; }
 .nav a.link { text-decoration: none; font-weight: 600; font-size: 0.95rem; opacity: 0.85; }
 .nav a.link:hover { opacity: 1; text-decoration: underline; text-underline-offset: 4px; }
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; flex: none;
+  border: 3px solid var(--plum-ink);
+  border-radius: 12px;
+  background: var(--cream); color: var(--plum-ink);
+  box-shadow: 0 4px 0 var(--plum-ink);
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.icon-btn svg { width: 18px; height: 18px; display: block; }
+.icon-btn:hover { background: #fff; transform: translateY(-2px); box-shadow: 0 6px 0 var(--plum-ink); }
+.icon-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--plum-ink); }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -342,6 +354,11 @@ footer .inner { padding-block: 40px; display: grid; gap: 22px; }
       <a class="link" href="#barn">The Barn</a>
       <a class="link" href="#specs">Token</a>
       <a class="link" href="#faq">FAQ</a>
+      <a class="icon-btn" data-link="x" href="#" target="_blank" rel="noopener" aria-label="Yield Fields Strategy on X">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+      </a>
       <a class="btn sm" data-link="pons" href="#" target="_blank" rel="noopener">Buy <span data-ticker>$YFS</span></a>
     </nav>
   </div>
@@ -554,7 +571,7 @@ const CONFIG = {
   ticker: "$YFS",
   contract: "",                 // token contract address; empty shows "Revealed at launch"
   ponsUrl: "",                  // link to the token page on PONS
-  xUrl: "",                     // your X / Twitter profile
+  xUrl: "https://x.com/yieldfieldstrgy",  // your X / Twitter profile
   openseaUrl: "https://opensea.io/collection/yield-field-deeds"
 };
 /* ==================================== */
