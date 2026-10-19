@@ -1,0 +1,792 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yield Fields Strategy</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Yield Fields Strategy ($YFS): a token on Robinhood Chain whose 5% buy and sell tax farms Yield Field Deeds.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Pixelify+Sans:wght@500;700&family=Figtree:wght@400;600;800&display=swap">
+<style>
+/* Layout: a pixel farm seen from above. Plum night sky hero, a living crop field band,
+   then amber and cream "seed packet" sections that explain the flywheel. One committed look. */
+:root {
+  --plum: #3d1236;
+  --plum-2: #57204f;
+  --plum-ink: #2a0b25;
+  --amber: #ffb230;
+  --amber-deep: #f0941a;
+  --cream: #fff5e1;
+  --lilac: #b9b8dc;
+  --grass: #78bf45;
+  --grass-dark: #4f9a2e;
+  --soil: #c97a3c;
+  --water: #2c78b4;
+  --ink: #2a0b25;
+  --ink-soft: #6b4664;
+
+  --font-display: "Lilita One", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-pixel: "Pixelify Sans", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --step--1: clamp(0.82rem, 0.8rem + 0.1vw, 0.9rem);
+  --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.1rem);
+  --step-1: clamp(1.2rem, 1.1rem + 0.5vw, 1.45rem);
+  --step-2: clamp(1.6rem, 1.3rem + 1.4vw, 2.3rem);
+  --step-3: clamp(2.4rem, 1.6rem + 3.8vw, 4.6rem);
+
+  --wrap: 1120px;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--plum);
+}
+a { color: inherit; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.05; margin: 0; text-wrap: balance; letter-spacing: 0.01em; }
+p { margin: 0; }
+:focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; border-radius: 4px; }
+
+.inner {
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.label {
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  font-size: var(--step--1);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* ---------- Header ---------- */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: var(--plum);
+  color: var(--cream);
+  border-bottom: 4px solid var(--plum-ink);
+}
+.top .inner { display: flex; align-items: center; gap: 16px; padding-block: 10px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; min-width: 0; }
+.brand svg { width: 36px; height: 36px; flex: none; image-rendering: pixelated; }
+.brand span { font-family: var(--font-display); font-size: 1.2rem; white-space: nowrap; }
+.nav { display: flex; gap: 20px; margin-left: auto; align-items: center; }
+.nav a.link { text-decoration: none; font-weight: 600; font-size: 0.95rem; opacity: 0.85; }
+.nav a.link:hover { opacity: 1; text-decoration: underline; text-underline-offset: 4px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font-display); font-size: 1.1rem; letter-spacing: 0.02em;
+  text-decoration: none; cursor: pointer;
+  padding: 12px 22px;
+  border: 3px solid var(--plum-ink);
+  border-radius: 12px;
+  background: var(--amber); color: var(--plum-ink);
+  box-shadow: 0 5px 0 var(--plum-ink);
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.btn:hover { background: #ffc254; transform: translateY(-2px); box-shadow: 0 7px 0 var(--plum-ink); }
+.btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--plum-ink); }
+.btn.ghost { background: var(--cream); }
+.btn.ghost:hover { background: #fff; }
+.btn.sm { font-size: 0.95rem; padding: 8px 14px; box-shadow: 0 4px 0 var(--plum-ink); }
+
+@media (max-width: 720px) {
+  .nav a.link { display: none; }
+}
+
+/* ---------- Hero ---------- */
+.hero { background: var(--plum); color: var(--cream); position: relative; overflow: hidden; }
+.hero .inner { padding-block: clamp(48px, 8vw, 96px) clamp(40px, 6vw, 72px); display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 40px; align-items: center; }
+.hero-copy { min-width: 0; display: grid; gap: 22px; }
+.hero .label { color: var(--amber); }
+.wordmark { font-size: var(--step-3); color: var(--cream); }
+.wordmark .line { display: block; text-shadow: 0 6px 0 var(--lilac), 0 10px 0 var(--plum-ink); }
+.wordmark .strat {
+  display: inline-block; margin-top: 14px;
+  color: var(--plum-ink); background: var(--amber);
+  padding: 0.04em 0.28em 0.1em; border-radius: 0.18em;
+  border: 4px solid var(--plum-ink); box-shadow: 0 6px 0 var(--plum-ink);
+  transform: rotate(-2deg);
+  text-shadow: none;
+}
+.lead { font-size: var(--step-1); max-width: 34ch; color: #f3ddeb; line-height: 1.45; }
+.lead b { color: var(--amber); font-weight: 800; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 14px; }
+
+.ca {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: var(--plum-ink); border: 2px dashed #7a4672; border-radius: 10px;
+  padding: 10px 12px; max-width: 520px;
+}
+.ca .label { color: var(--lilac); font-size: 0.75rem; }
+.ca code { font-family: var(--font-pixel); font-size: 0.95rem; color: var(--cream); overflow-wrap: anywhere; min-width: 0; flex: 1; }
+.copy {
+  font-family: var(--font-pixel); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em;
+  background: var(--lilac); color: var(--plum-ink); border: 0; border-radius: 6px; padding: 6px 10px; cursor: pointer;
+}
+.copy:hover { background: var(--cream); }
+
+/* Tax sign: a wooden farm sign */
+.sign { justify-self: center; width: min(100%, 320px); display: grid; gap: 0; }
+.sign-board {
+  background: var(--soil);
+  border: 4px solid var(--plum-ink);
+  border-radius: 14px;
+  box-shadow: inset 0 -8px 0 #a85f28, 0 8px 0 var(--plum-ink);
+  padding: 20px 18px 26px;
+  text-align: center;
+  color: var(--cream);
+  transform: rotate(2deg);
+}
+.sign-board .label { color: #ffe3b8; }
+.tax { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.tax div { background: var(--cream); color: var(--plum-ink); border: 3px solid var(--plum-ink); border-radius: 10px; padding: 10px 6px 8px; }
+.tax strong { display: block; font-family: var(--font-display); font-size: clamp(2.2rem, 1.6rem + 2vw, 3rem); line-height: 1; font-weight: 400; }
+.tax span { font-family: var(--font-pixel); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; }
+.sign-board p { margin-top: 14px; font-weight: 600; font-size: 0.95rem; line-height: 1.4; }
+.sign-post { width: 22px; height: 70px; margin: 0 auto; background: #a85f28; border: 4px solid var(--plum-ink); border-top: 0; }
+
+.stars { position: absolute; inset: 0; pointer-events: none; }
+.stars i { position: absolute; width: 6px; height: 6px; background: var(--cream); opacity: .55; box-shadow: 6px 0 0 -0px transparent; }
+
+@media (max-width: 820px) {
+  .hero .inner { grid-template-columns: 1fr; }
+  .sign { justify-self: start; }
+}
+
+/* ---------- Field band ---------- */
+.field { background: var(--grass); border-top: 4px solid var(--plum-ink); border-bottom: 4px solid var(--plum-ink); }
+.field canvas { display: block; width: 100%; height: 184px; image-rendering: pixelated; image-rendering: crisp-edges; }
+
+/* ---------- Sections ---------- */
+section { padding-block: clamp(56px, 8vw, 104px); }
+.sec-head { display: grid; gap: 14px; max-width: 680px; margin-bottom: clamp(32px, 5vw, 56px); }
+.sec-head h2 { font-size: var(--step-2); }
+.sec-head p { color: var(--ink-soft); max-width: 60ch; }
+.sec-head .label { color: var(--amber-deep); }
+
+/* Flywheel */
+.flywheel { background: var(--cream); }
+.fw-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); align-items: center; }
+.wheel { width: 100%; max-width: 460px; justify-self: center; aspect-ratio: 1; }
+.wheel svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; counter-reset: s; }
+.steps li {
+  display: grid; grid-template-columns: 48px 1fr; gap: 14px; align-items: start;
+  padding: 14px 16px; border-radius: 14px; border: 3px solid transparent;
+  cursor: pointer; transition: background .2s ease, border-color .2s ease;
+}
+.steps li:hover { background: #ffecc6; }
+.steps li.on { background: #ffe1a3; border-color: var(--plum-ink); }
+.steps .n {
+  width: 48px; height: 48px; display: grid; place-items: center;
+  font-family: var(--font-pixel); font-weight: 700; font-size: 1.3rem;
+  background: var(--plum); color: var(--amber); border-radius: 10px;
+}
+.steps li.on .n { background: var(--amber); color: var(--plum-ink); outline: 3px solid var(--plum-ink); }
+.steps h3 { font-size: var(--step-1); margin-bottom: 4px; }
+.steps p { color: var(--ink-soft); font-size: 0.98rem; }
+.steps li > div { min-width: 0; }
+
+@media (max-width: 860px) {
+  .fw-grid { grid-template-columns: 1fr; }
+}
+
+/* Calculator */
+.barn { background: var(--amber); border-top: 4px solid var(--plum-ink); border-bottom: 4px solid var(--plum-ink); }
+.barn .sec-head .label { color: var(--plum-2); }
+.barn .sec-head p { color: var(--plum-2); }
+.calc { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 24px; align-items: stretch; }
+.calc-in, .calc-out {
+  background: var(--cream); border: 4px solid var(--plum-ink); border-radius: 18px;
+  box-shadow: 0 8px 0 var(--plum-ink); padding: clamp(18px, 3vw, 28px);
+  display: grid; gap: 22px; min-width: 0;
+}
+.field-row { display: grid; gap: 8px; }
+.field-row label { font-weight: 800; }
+.field-row .hint { font-size: 0.85rem; color: var(--ink-soft); }
+.num {
+  display: flex; align-items: center; gap: 8px;
+  border: 3px solid var(--plum-ink); border-radius: 10px; background: #fff; padding: 4px 12px;
+}
+.num input {
+  width: 100%; border: 0; background: transparent; outline: none;
+  font-family: var(--font-pixel); font-weight: 700; font-size: 1.5rem; color: var(--plum-ink);
+  font-variant-numeric: tabular-nums; padding: 6px 0;
+}
+.num:focus-within { outline: 3px solid var(--plum-2); outline-offset: 2px; }
+.num span { font-family: var(--font-pixel); color: var(--ink-soft); font-weight: 700; }
+input[type="range"] { width: 100%; accent-color: var(--plum); }
+
+.calc-out { background: var(--plum); color: var(--cream); align-content: start; }
+.calc-out .label { color: var(--amber); }
+.out-rows { display: grid; gap: 0; }
+.out-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 14px 0; border-bottom: 2px dashed #7a4672; flex-wrap: wrap; }
+.out-row:last-child { border-bottom: 0; }
+.out-row span { color: #f0d6e6; }
+.out-row b { font-family: var(--font-pixel); font-size: 1.6rem; font-variant-numeric: tabular-nums; color: var(--cream); font-weight: 700; }
+.out-row.big b { font-size: clamp(2rem, 1.5rem + 2vw, 2.8rem); color: var(--amber); }
+.plots { display: flex; flex-wrap: wrap; gap: 6px; min-height: 30px; }
+.plots i { width: 26px; height: 26px; border-radius: 4px; background: var(--soil); border: 3px solid var(--plum-ink); position: relative; }
+.plots i::after { content: ""; position: absolute; left: 7px; top: 3px; width: 6px; height: 10px; background: var(--grass); box-shadow: -4px 3px 0 -1px var(--grass), 4px 3px 0 -1px var(--grass); }
+.plots i.part { opacity: .45; }
+.plots em { font-style: normal; font-family: var(--font-pixel); color: var(--lilac); align-self: center; margin-left: 4px; }
+.calc-note { font-size: 0.85rem; color: var(--lilac); }
+
+@media (max-width: 860px) { .calc { grid-template-columns: 1fr; } }
+
+/* Seed packet specs */
+.specs { background: var(--cream); }
+.packet-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 48px); align-items: start; }
+.packet {
+  background: #fff; border: 4px solid var(--plum-ink); border-radius: 18px; overflow: hidden;
+  box-shadow: 0 8px 0 var(--plum-ink);
+}
+.packet-top { background: var(--plum); color: var(--cream); padding: 18px 22px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.packet-top h3 { font-size: var(--step-1); }
+.packet-top .label { color: var(--amber); }
+dl.rows { margin: 0; display: grid; }
+dl.rows div { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 12px; padding: 14px 22px; border-top: 2px dashed #e7cfa0; }
+dl.rows div:first-child { border-top: 0; }
+dl.rows dt { font-family: var(--font-pixel); font-weight: 500; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.85rem; padding-top: 3px; }
+dl.rows dd { margin: 0; font-weight: 800; overflow-wrap: anywhere; }
+
+.deeds { display: grid; gap: 18px; }
+.deeds h3 { font-size: var(--step-2); }
+.deeds p { color: var(--ink-soft); max-width: 52ch; }
+.deed-card {
+  display: grid; grid-template-columns: 96px 1fr; gap: 18px; align-items: center;
+  background: var(--amber); border: 4px solid var(--plum-ink); border-radius: 18px; padding: 16px;
+  box-shadow: 0 8px 0 var(--plum-ink);
+}
+.deed-card canvas { width: 96px; height: 96px; image-rendering: pixelated; border: 3px solid var(--plum-ink); border-radius: 10px; background: var(--grass); }
+.deed-card div { min-width: 0; }
+.deed-card b { font-family: var(--font-display); font-size: 1.4rem; font-weight: 400; display: block; line-height: 1.1; }
+.deed-card span { font-family: var(--font-pixel); font-size: 0.9rem; color: var(--plum-2); }
+.deed-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.deed-facts div { border: 3px solid var(--plum-ink); border-radius: 12px; padding: 12px 14px; background: #fff; }
+.deed-facts strong { display: block; font-family: var(--font-pixel); font-size: 1.6rem; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.deed-facts span { font-size: 0.85rem; color: var(--ink-soft); }
+
+@media (max-width: 860px) { .packet-grid { grid-template-columns: 1fr; } }
+@media (max-width: 420px) { dl.rows div { grid-template-columns: 1fr; gap: 2px; } }
+
+/* FAQ */
+.faq { background: var(--plum); color: var(--cream); }
+.faq .sec-head p { color: #f0d6e6; }
+.faq .sec-head .label { color: var(--amber); }
+.qa { display: grid; gap: 12px; max-width: 820px; }
+details { background: var(--plum-2); border: 3px solid var(--plum-ink); border-radius: 14px; }
+summary {
+  list-style: none; cursor: pointer; padding: 16px 20px; font-weight: 800; font-size: 1.05rem;
+  display: flex; justify-content: space-between; gap: 16px; align-items: center;
+}
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; font-family: var(--font-pixel); font-size: 1.5rem; color: var(--amber); line-height: 1; flex: none; }
+details[open] summary::after { content: "–"; }
+details p { padding: 0 20px 18px; color: #f0d6e6; max-width: 65ch; }
+
+/* Footer */
+footer { background: var(--plum-ink); color: #d8bfd0; }
+footer .inner { padding-block: 40px; display: grid; gap: 22px; }
+.foot-row { display: flex; flex-wrap: wrap; gap: 16px 28px; align-items: center; justify-content: space-between; }
+.foot-links { display: flex; flex-wrap: wrap; gap: 10px 22px; }
+.foot-links a { text-decoration: none; font-weight: 600; color: var(--cream); }
+.foot-links a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.disclaimer { font-size: 0.85rem; max-width: 80ch; line-height: 1.55; color: #b99bb0; }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px);
+  background: var(--amber); color: var(--plum-ink); border: 3px solid var(--plum-ink); border-radius: 10px;
+  font-family: var(--font-pixel); font-weight: 700; padding: 10px 16px; opacity: 0; transition: .2s ease; pointer-events: none; z-index: 30;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .btn, .steps li, .toast { transition: none; }
+}
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div class="inner">
+    <a class="brand" href="#top" aria-label="Yield Fields Strategy home">
+      <svg viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges">
+        <rect x="2" y="0" width="8" height="12" fill="#ffb230"/><rect x="0" y="2" width="12" height="8" fill="#ffb230"/><rect x="1" y="1" width="10" height="10" fill="#ffb230"/>
+        <rect x="5" y="4" width="2" height="5" fill="#2a0b25"/>
+        <rect x="2" y="3" width="3" height="2" fill="#4f9a2e"/><rect x="3" y="5" width="2" height="1" fill="#4f9a2e"/>
+        <rect x="7" y="2" width="3" height="2" fill="#78bf45"/><rect x="7" y="4" width="2" height="1" fill="#78bf45"/>
+        <rect x="3" y="9" width="6" height="1" fill="#c97a3c"/>
+      </svg>
+      <span>Yield Fields Strategy</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a class="link" href="#flywheel">Flywheel</a>
+      <a class="link" href="#barn">The Barn</a>
+      <a class="link" href="#specs">Token</a>
+      <a class="link" href="#faq">FAQ</a>
+      <a class="btn sm" data-link="pons" href="#" target="_blank" rel="noopener">Buy <span data-ticker>$YFS</span></a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero" style="padding-block:0">
+    <div class="stars" aria-hidden="true" id="stars"></div>
+    <div class="inner">
+      <div class="hero-copy">
+        <p class="label">Robinhood Chain · Launching on PONS</p>
+        <h1 class="wordmark">
+          <span class="line">Yield Fields</span>
+          <span class="strat">Strategy</span>
+        </h1>
+        <p class="lead">The token that farms land. Every <b data-ticker>$YFS</b> trade plants a little more of the Yield Fields map in the strategy's barn.</p>
+        <div class="cta-row">
+          <a class="btn" data-link="pons" href="#" target="_blank" rel="noopener">Buy on PONS</a>
+          <a class="btn ghost" href="#flywheel">See the flywheel</a>
+        </div>
+        <div class="ca">
+          <span class="label">Contract</span>
+          <code id="ca-text">Revealed at launch</code>
+          <button class="copy" id="copy-ca" type="button">Copy</button>
+        </div>
+      </div>
+
+      <div class="sign" aria-label="Trading tax">
+        <div class="sign-board">
+          <p class="label" style="margin:0">Farm tax</p>
+          <div class="tax">
+            <div><strong>5%</strong><span>Buy</span></div>
+            <div><strong>5%</strong><span>Sell</span></div>
+          </div>
+          <p>Every cent goes into buying Yield Field Deeds.</p>
+        </div>
+        <div class="sign-post" aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="field" aria-hidden="true"><canvas id="field"></canvas></div>
+
+  <section class="flywheel" id="flywheel">
+    <div class="inner">
+      <div class="sec-head">
+        <p class="label">The flywheel</p>
+        <h2>Trades buy land. Land sells higher. Profit buys more land.</h2>
+        <p>Yield Fields Strategy turns trading volume into a growing farm of Yield Field Deeds. Each turn of the wheel feeds the next one.</p>
+      </div>
+
+      <div class="fw-grid">
+        <div class="wheel">
+          <svg id="wheel" viewBox="0 0 420 420" role="img" aria-label="Flywheel: trade, tax fills the barn, buy deeds at floor, relist higher, sell and replant">
+            <circle cx="210" cy="210" r="150" fill="none" stroke="#2a0b25" stroke-width="14"/>
+            <circle cx="210" cy="210" r="150" fill="none" stroke="#ffb230" stroke-width="8" stroke-dasharray="4 14" stroke-linecap="square" id="track"/>
+            <g id="arrows"></g>
+            <circle cx="210" cy="210" r="78" fill="#3d1236" stroke="#2a0b25" stroke-width="6"/>
+            <text x="210" y="204" text-anchor="middle" font-family="Lilita One, sans-serif" font-size="34" fill="#ffb230" id="wheel-ticker">$YFS</text>
+            <text x="210" y="232" text-anchor="middle" font-family="Pixelify Sans, monospace" font-size="15" fill="#fff5e1" letter-spacing="2">FLYWHEEL</text>
+            <g id="nodes"></g>
+            <rect id="dot" x="-9" y="-9" width="18" height="18" fill="#78bf45" stroke="#2a0b25" stroke-width="4"/>
+          </svg>
+        </div>
+
+        <ol class="steps" id="steps">
+          <li data-i="0"><span class="n">1</span><div><h3>Trade <span data-ticker>$YFS</span></h3><p>Every buy and every sell on PONS carries a 5% tax.</p></div></li>
+          <li data-i="1"><span class="n">2</span><div><h3>The barn fills up</h3><p>The tax collects in the strategy treasury, trade by trade.</p></div></li>
+          <li data-i="2"><span class="n">3</span><div><h3>Buy Deeds at the floor</h3><p>When the barn holds enough, it buys Yield Field Deeds at the floor price.</p></div></li>
+          <li data-i="3"><span class="n">4</span><div><h3>Relist higher</h3><p>Every Deed the strategy owns goes back on the market above the price it paid.</p></div></li>
+          <li data-i="4"><span class="n">5</span><div><h3>Sell and replant</h3><p>When a Deed sells, the proceeds return to the barn and buy the next ones. The wheel spins again, a little bigger.</p></div></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="barn" id="barn">
+    <div class="inner">
+      <div class="sec-head">
+        <p class="label">The barn</p>
+        <h2>How much volume plants one Deed?</h2>
+        <p>5% of every trade goes to the barn, buys and sells alike. Plug in a trading volume and a Deed floor to see how fast the farm grows.</p>
+      </div>
+
+      <div class="calc">
+        <form class="calc-in" id="calc" novalidate>
+          <div class="field-row">
+            <label for="vol">Trading volume</label>
+            <div class="num"><input id="vol" type="number" inputmode="decimal" min="0" step="1" value="50"><span>ETH</span></div>
+            <input id="vol-range" type="range" min="0" max="500" step="5" value="50" aria-label="Trading volume slider">
+            <span class="hint">Buys plus sells, over any period you like.</span>
+          </div>
+          <div class="field-row">
+            <label for="floor">Deed floor price</label>
+            <div class="num"><input id="floor" type="number" inputmode="decimal" min="0.01" step="0.01" value="1.14"><span>ETH</span></div>
+            <span class="hint">Example value. Check the live floor on <a data-link="opensea" href="https://opensea.io/collection/yield-field-deeds" target="_blank" rel="noopener">OpenSea</a>.</span>
+          </div>
+        </form>
+
+        <div class="calc-out" aria-live="polite">
+          <p class="label">Harvest</p>
+          <div class="out-rows">
+            <div class="out-row"><span>Tax into the barn</span><b id="o-tax">2.50 ETH</b></div>
+            <div class="out-row big"><span>Deeds the barn can buy</span><b id="o-deeds">2.19</b></div>
+            <div class="out-row"><span>Volume per Deed</span><b id="o-per">22.8 ETH</b></div>
+          </div>
+          <div class="plots" id="plots" aria-hidden="true"></div>
+          <p class="calc-note">Before any resale profit. Each Deed that sells above cost sends extra ETH back to the barn.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="specs" id="specs">
+    <div class="inner">
+      <div class="packet-grid">
+        <div class="packet">
+          <div class="packet-top">
+            <h3>Token seed packet</h3>
+            <span class="label" data-ticker>$YFS</span>
+          </div>
+          <dl class="rows">
+            <div><dt>Name</dt><dd>Yield Fields Strategy</dd></div>
+            <div><dt>Ticker</dt><dd data-ticker>$YFS</dd></div>
+            <div><dt>Network</dt><dd>Robinhood Chain</dd></div>
+            <div><dt>Launchpad</dt><dd>PONS</dd></div>
+            <div><dt>Buy tax</dt><dd>5%</dd></div>
+            <div><dt>Sell tax</dt><dd>5%</dd></div>
+            <div><dt>Tax goes to</dt><dd>Buying Yield Field Deeds</dd></div>
+            <div><dt>Contract</dt><dd id="ca-spec">Revealed at launch</dd></div>
+          </dl>
+        </div>
+
+        <div class="deeds">
+          <p class="label" style="color:var(--amber-deep)">What the barn buys</p>
+          <h3>Yield Field Deeds</h3>
+          <p>Each Deed is a plot of land in Yield Fields, the farming game coming to Robinhood Chain. Open packs, plant crops, harvest the yield. The strategy collects these plots and keeps them moving.</p>
+          <div class="deed-card">
+            <canvas id="deed" width="24" height="24"></canvas>
+            <div>
+              <b>Yield Field Deed</b>
+              <span>Land NFT · Robinhood Chain</span>
+            </div>
+          </div>
+          <div class="deed-facts">
+            <div><strong>3,333</strong><span>Deeds in the collection</span></div>
+            <div><strong>1 plot</strong><span>of in-game land per Deed</span></div>
+          </div>
+          <div><a class="btn ghost" data-link="opensea" href="https://opensea.io/collection/yield-field-deeds" target="_blank" rel="noopener">View Deeds on OpenSea</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq" id="faq">
+    <div class="inner">
+      <div class="sec-head">
+        <p class="label">FAQ</p>
+        <h2>Questions from the farmhouse</h2>
+      </div>
+      <div class="qa">
+        <details open>
+          <summary>What is Yield Fields Strategy?</summary>
+          <p>A token on Robinhood Chain with a 5% tax on buys and sells. The tax is used to buy Yield Field Deeds, relist them above cost, and recycle the proceeds into more Deeds.</p>
+        </details>
+        <details>
+          <summary>Where does the 5% tax go?</summary>
+          <p>Into the strategy treasury, which we call the barn. The barn's only job is buying Yield Field Deeds and selling them for more than it paid.</p>
+        </details>
+        <details>
+          <summary>Why Yield Field Deeds?</summary>
+          <p>Deeds are the land of Yield Fields, a limited set of 3,333 plots. Land is what every farmer in the game needs, which makes it a natural asset for the flywheel to collect.</p>
+        </details>
+        <details>
+          <summary>Do I need to own a Deed or play the game?</summary>
+          <p>No. Holding <span data-ticker>$YFS</span> is enough. You get exposure to the strategy without buying a Deed yourself.</p>
+        </details>
+        <details>
+          <summary>How do I buy?</summary>
+          <p>Bridge some ETH to Robinhood Chain, open the token on PONS and swap. Always check that the contract address matches the one posted on this site and on our X account.</p>
+        </details>
+        <details>
+          <summary>Is this the official Yield Fields token?</summary>
+          <p>No. Yield Fields Strategy is an independent community project and is not run or endorsed by the Yield Fields team.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="inner">
+    <div class="foot-row">
+      <span style="font-family:var(--font-display);font-size:1.3rem;color:var(--cream)">Yield Fields Strategy</span>
+      <div class="foot-links">
+        <a data-link="pons" href="#" target="_blank" rel="noopener">PONS</a>
+        <a data-link="x" href="#" target="_blank" rel="noopener">X / Twitter</a>
+        <a data-link="opensea" href="https://opensea.io/collection/yield-field-deeds" target="_blank" rel="noopener">Yield Field Deeds</a>
+      </div>
+    </div>
+    <p class="disclaimer">Yield Fields Strategy is an independent community token and is not affiliated with, operated by or endorsed by the Yield Fields team. Yield Field Deeds and Yield Fields belong to their creators. <span data-ticker>$YFS</span> is a memecoin with no promise of returns. NFT prices move up and down, and a relisted Deed may take time to sell. Only trade what you can afford to lose.</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ===== Edit these before launch ===== */
+const CONFIG = {
+  ticker: "$YFS",
+  contract: "",                 // token contract address; empty shows "Revealed at launch"
+  ponsUrl: "",                  // link to the token page on PONS
+  xUrl: "",                     // your X / Twitter profile
+  openseaUrl: "https://opensea.io/collection/yield-field-deeds"
+};
+/* ==================================== */
+
+(function () {
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Config wiring
+  document.querySelectorAll("[data-ticker]").forEach(el => el.textContent = CONFIG.ticker);
+  const wt = document.getElementById("wheel-ticker"); if (wt) wt.textContent = CONFIG.ticker;
+  const links = { pons: CONFIG.ponsUrl, x: CONFIG.xUrl, opensea: CONFIG.openseaUrl };
+  document.querySelectorAll("[data-link]").forEach(a => {
+    const url = links[a.dataset.link];
+    if (url) a.href = url;
+    else { a.href = "#top"; a.removeAttribute("target"); a.title = "Link goes live at launch"; }
+  });
+  const caText = CONFIG.contract || "Revealed at launch";
+  document.getElementById("ca-text").textContent = caText;
+  document.getElementById("ca-spec").textContent = caText;
+
+  // Toast + copy
+  const toast = document.getElementById("toast");
+  let tt;
+  function say(msg) { toast.textContent = msg; toast.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => toast.classList.remove("show"), 1800); }
+  document.getElementById("copy-ca").addEventListener("click", () => {
+    if (!CONFIG.contract) { say("Contract drops at launch"); return; }
+    const done = () => say("Contract copied");
+    const fallback = () => {
+      const r = document.createRange(); r.selectNodeContents(document.getElementById("ca-text"));
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r); say("Selected. Press copy");
+    };
+    try { navigator.clipboard.writeText(CONFIG.contract).then(done, fallback); } catch (e) { fallback(); }
+  });
+
+  // Stars in hero
+  const stars = document.getElementById("stars");
+  const starPos = [[6,14],[14,62],[22,30],[35,8],[41,78],[52,20],[58,55],[66,12],[71,86],[79,40],[86,18],[93,66],[30,90],[48,44],[97,30]];
+  starPos.forEach(([x, y], i) => {
+    const s = document.createElement("i");
+    s.style.left = x + "%"; s.style.top = y + "%";
+    if (i % 3 === 0) { s.style.width = s.style.height = "4px"; s.style.opacity = ".35"; }
+    stars.appendChild(s);
+  });
+
+  // ---------- Pixel crop sprites ----------
+  const C = { grass:"#78bf45", grass2:"#6bb23b", grassD:"#4f9a2e", soil:"#c97a3c", soilD:"#a85f28", soilL:"#dc9455",
+              fence:"#8a4a1e", fenceL:"#b36a32", ink:"#2a0b25", leaf:"#3f8f2a", leafL:"#6fcf4a",
+              orange:"#ff8a1f", orangeL:"#ffb35c", blue:"#3fa9e0", blueL:"#8fd6ff", red:"#e2463a", redL:"#ff8a74", purple:"#9b4fd0", water:"#2c78b4" };
+  const FRUITS = [["orange","orangeL"],["blue","blueL"],["red","redL"],["purple","orangeL"]];
+
+  function px(ctx, x, y, w, h, c) { ctx.fillStyle = C[c] || c; ctx.fillRect(x, y, w, h); }
+
+  // 8x8 crop at (x,y), stage 0..4
+  function crop(ctx, x, y, stage, f) {
+    const [fc, fl] = FRUITS[f % FRUITS.length];
+    if (stage === 0) { px(ctx, x+3, y+6, 2, 1, "soilD"); return; }
+    if (stage >= 1) { px(ctx, x+3, y+5, 2, 2, "leaf"); }
+    if (stage >= 2) { px(ctx, x+1, y+3, 2, 2, "leaf"); px(ctx, x+5, y+3, 2, 2, "leaf"); px(ctx, x+2, y+4, 1, 1, "leafL"); px(ctx, x+5, y+4, 1, 1, "leafL"); px(ctx, x+3, y+3, 2, 3, "leaf"); }
+    if (stage >= 3) { px(ctx, x+2, y+1, 4, 2, "leafL"); px(ctx, x+3, y+0, 2, 1, "leaf"); px(ctx, x+0, y+4, 1, 2, "leaf"); px(ctx, x+7, y+4, 1, 2, "leaf"); }
+    if (stage >= 4) { px(ctx, x+2, y+2, 4, 4, fc); px(ctx, x+3, y+2, 1, 1, fl); px(ctx, x+1, y+3, 1, 2, fc); px(ctx, x+6, y+3, 1, 2, fc); px(ctx, x+3, y+1, 2, 1, "leaf"); }
+  }
+
+  function rng(seed) { let s = seed >>> 0; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
+
+  // ---------- Field band ----------
+  const field = document.getElementById("field");
+  const fctx = field.getContext("2d");
+  const SCALE = 4;
+  let W = 0, H = 46, plots = [], deco = [];
+
+  function layoutField() {
+    const cssW = field.clientWidth || window.innerWidth;
+    W = Math.ceil(cssW / SCALE);
+    field.width = W; field.height = H;
+    const r = rng(7);
+    plots = []; deco = [];
+    let x = 6;
+    let k = 0;
+    while (x < W - 10) {
+      const cols = 3 + Math.floor(r() * 4);
+      const pw = cols * 9 + 5;
+      if (x + pw > W - 4) break;
+      plots.push({ x, y: 9, cols, rows: 3, w: pw, h: 3 * 9 + 4, seed: k++ });
+      x += pw + 8 + Math.floor(r() * 14);
+      // gap decoration
+      deco.push({ x: x - 6 - Math.floor(r() * 4), y: 4 + Math.floor(r() * 34), t: Math.floor(r() * 3) });
+    }
+  }
+
+  function drawField(t) {
+    const ctx = fctx;
+    px(ctx, 0, 0, W, H, "grass");
+    // grass texture
+    const r = rng(3);
+    for (let i = 0; i < W * 0.9; i++) { const gx = Math.floor(r() * W), gy = Math.floor(r() * H); px(ctx, gx, gy, 1, 1, r() > 0.5 ? "grass2" : "grassD"); }
+    // path
+    px(ctx, 0, H - 4, W, 4, "soilL"); px(ctx, 0, H - 4, W, 1, "soil");
+    // decorations: flowers, rocks, bushes
+    deco.forEach(d => {
+      if (d.t === 0) { px(ctx, d.x, d.y, 1, 1, "#fff5e1"); px(ctx, d.x+1, d.y+1, 1, 1, "#ffd23f"); px(ctx, d.x+2, d.y, 1, 1, "#fff5e1"); }
+      else if (d.t === 1) { px(ctx, d.x, d.y, 3, 2, "#9a9cb8"); px(ctx, d.x, d.y, 2, 1, "#c8cae0"); }
+      else { px(ctx, d.x, d.y, 4, 3, "grassD"); px(ctx, d.x+1, d.y-1, 2, 1, "grassD"); px(ctx, d.x+1, d.y, 1, 1, "leafL"); }
+    });
+    // plots
+    const period = 9000;
+    plots.forEach(p => {
+      px(ctx, p.x - 1, p.y - 1, p.w + 2, p.h + 2, "fence");
+      px(ctx, p.x, p.y, p.w, p.h, "soil");
+      for (let ry = 0; ry < p.rows; ry++) px(ctx, p.x + 1, p.y + 4 + ry * 9 + 7, p.w - 2, 1, "soilD");
+      for (let fx = p.x - 1; fx < p.x + p.w + 1; fx += 4) { px(ctx, fx, p.y - 2, 1, 2, "fenceL"); px(ctx, fx, p.y + p.h, 1, 2, "fenceL"); }
+      for (let ry = 0; ry < p.rows; ry++) {
+        for (let cx = 0; cx < p.cols; cx++) {
+          const phase = ((t / period) + (p.seed * 0.17) + (cx * 0.06) + (ry * 0.11)) % 1;
+          const stage = reduce ? 4 - ((cx + ry + p.seed) % 3) : Math.min(4, Math.floor(phase * 5.6));
+          crop(ctx, p.x + 3 + cx * 9, p.y + 2 + ry * 9, stage, p.seed + ry);
+        }
+      }
+    });
+  }
+
+  // ---------- Deed card sprite ----------
+  function drawDeed() {
+    const c = document.getElementById("deed").getContext("2d");
+    px(c, 0, 0, 24, 24, "grass");
+    px(c, 2, 2, 20, 20, "fence"); px(c, 3, 3, 18, 18, "soil");
+    crop(c, 4, 4, 4, 0); crop(c, 12, 4, 4, 1); crop(c, 4, 13, 4, 2); crop(c, 12, 13, 3, 3);
+  }
+
+  // ---------- Flywheel ----------
+  const svgNS = "http://www.w3.org/2000/svg";
+  const nodesG = document.getElementById("nodes");
+  const arrowsG = document.getElementById("arrows");
+  const dot = document.getElementById("dot");
+  const stepsEl = document.querySelectorAll("#steps li");
+  const N = 5, CX = 210, CY = 210, R = 150;
+  const NODE_LABELS = ["TRADE", "TAX", "BUY", "RELIST", "SELL"];
+  const ang = i => (-90 + i * (360 / N)) * Math.PI / 180;
+  const nodeEls = [];
+  for (let i = 0; i < N; i++) {
+    const a = ang(i), x = CX + R * Math.cos(a), y = CY + R * Math.sin(a);
+    const g = document.createElementNS(svgNS, "g");
+    g.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+    g.style.cursor = "pointer";
+    g.innerHTML = `<rect x="-38" y="-38" width="76" height="76" rx="14" fill="#fff5e1" stroke="#2a0b25" stroke-width="5"/>
+      <text y="4" text-anchor="middle" font-family="Pixelify Sans, monospace" font-weight="700" font-size="26" fill="#3d1236">${i + 1}</text>
+      <text y="24" text-anchor="middle" font-family="Pixelify Sans, monospace" font-weight="700" font-size="11" letter-spacing="1" fill="#6b4664">${NODE_LABELS[i]}</text>`;
+    g.addEventListener("click", () => pick(i));
+    nodesG.appendChild(g); nodeEls.push(g);
+    // arrowhead between nodes
+    const am = ang(i + 0.5), ax = CX + R * Math.cos(am), ay = CY + R * Math.sin(am);
+    const rot = (am * 180 / Math.PI) + 90;
+    const p = document.createElementNS(svgNS, "path");
+    p.setAttribute("d", "M -10 -9 L 8 0 L -10 9 Z");
+    p.setAttribute("fill", "#3d1236"); p.setAttribute("stroke", "#2a0b25"); p.setAttribute("stroke-width", "3");
+    p.setAttribute("transform", `translate(${ax.toFixed(1)} ${ay.toFixed(1)}) rotate(${rot.toFixed(1)})`);
+    arrowsG.appendChild(p);
+  }
+
+  let active = -1, manualUntil = 0;
+  function setActive(i) {
+    if (i === active) return;
+    active = i;
+    stepsEl.forEach((li, k) => li.classList.toggle("on", k === i));
+    nodeEls.forEach((g, k) => {
+      const rect = g.querySelector("rect");
+      rect.setAttribute("fill", k === i ? "#ffb230" : "#fff5e1");
+    });
+  }
+  const LOOP = 14000;
+  let t0 = performance.now();
+  function pick(i) {
+    // jump the dot to the chosen node
+    t0 = performance.now() - (i / N) * LOOP;
+    setActive(i);
+    if (reduce) placeDot(i / N);
+  }
+  stepsEl.forEach((li, i) => {
+    li.tabIndex = 0;
+    li.addEventListener("click", () => pick(i));
+    li.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(i); } });
+  });
+  function placeDot(frac) {
+    const a = (-90 + frac * 360) * Math.PI / 180;
+    const x = CX + R * Math.cos(a), y = CY + R * Math.sin(a);
+    dot.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${(frac * 720).toFixed(0)})`);
+  }
+
+  // ---------- Calculator ----------
+  const vol = document.getElementById("vol"), volR = document.getElementById("vol-range"), floor = document.getElementById("floor");
+  const oTax = document.getElementById("o-tax"), oDeeds = document.getElementById("o-deeds"), oPer = document.getElementById("o-per"), plotsEl = document.getElementById("plots");
+  const TAX = 0.05;
+  const fmt = (n, d) => Number.isFinite(n) ? n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d }) : "–";
+  function calc() {
+    const v = Math.max(0, parseFloat(vol.value) || 0);
+    const f = parseFloat(floor.value);
+    const tax = v * TAX;
+    oTax.textContent = fmt(tax, 2) + " ETH";
+    if (!(f > 0)) { oDeeds.textContent = "–"; oPer.textContent = "Set a floor"; plotsEl.innerHTML = ""; return; }
+    const deeds = tax / f;
+    oDeeds.textContent = fmt(deeds, 2);
+    oPer.textContent = fmt(f / TAX, 1) + " ETH";
+    const whole = Math.floor(deeds), part = deeds - whole > 0.05;
+    const show = Math.min(whole, 24);
+    let html = "";
+    for (let i = 0; i < show; i++) html += "<i></i>";
+    if (whole < 24 && part) html += '<i class="part"></i>';
+    if (whole > 24) html += `<em>+${whole - 24} more</em>`;
+    plotsEl.innerHTML = html;
+  }
+  vol.addEventListener("input", () => { volR.value = Math.min(500, parseFloat(vol.value) || 0); calc(); });
+  volR.addEventListener("input", () => { vol.value = volR.value; calc(); });
+  floor.addEventListener("input", calc);
+  document.getElementById("calc").addEventListener("submit", e => e.preventDefault());
+
+  // ---------- Run ----------
+  layoutField(); drawField(0); drawDeed(); calc();
+  setActive(0); placeDot(0);
+  let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { layoutField(); drawField(performance.now()); }, 120); });
+
+  if (!reduce) {
+    let lastField = 0;
+    function frame(now) {
+      const frac = ((now - t0) % LOOP) / LOOP;
+      placeDot(frac);
+      setActive(Math.floor(frac * N + 0.5) % N);
+      if (now - lastField > 120) { drawField(now); lastField = now; }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+})();
+</script>
+
+</body>
+</html>
